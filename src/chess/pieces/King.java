@@ -3,7 +3,9 @@ import boardgame.*;
 import chess.*;
 public class King extends ChessPiece{
 
-    public King(Board board, Color color) {
+    private ChessMatch chessMatch;
+
+    public King(Board board, Color color, ChessMatch chessMatch) {
         super(board, color);
     }
     @Override
@@ -15,6 +17,13 @@ public class King extends ChessPiece{
         ChessPiece p = (ChessPiece)getBoard().piece(position); // p = piece
         return p == null || p.getColor() != getColor();
     }
+
+    private boolean testRookCastling(Position position) {
+        ChessPiece p = (ChessPiece)getBoard().piece(position); // p = piece
+        return p != null && p instanceof Rook && p.getColor() == getColor() && p.getMoveCount() == 0;
+        //returning true if the piece is a rook, if the piece is the same color as the king, and if the piece has not moved yet
+    }
+
 
     @Override
     public boolean[][] possibleMoves() {
@@ -52,6 +61,29 @@ public class King extends ChessPiece{
         pos.setValues(position.getRow() + 1, position.getColumn() + 1);
         if (getBoard().positionExists(pos) && canMove(pos)) // if position exists and there is no piece
             mat[pos.getRow()][pos.getColumn()] = true;
+
+        // #specialmove castling
+        if (getMoveCount() == 0 && !chessMatch.getCheck()){
+            // #specialmove castling kingside rook
+            Position posT1 = new Position(position.getRow(), position.getColumn() + 3); // posT1 = rook kingside
+            if (testRookCastling(posT1)) {
+                Position p1 = new Position(position.getRow(), position.getColumn() + 1); // p1 = position 1
+                Position p2 = new Position(position.getRow(), position.getColumn() + 2); // p2 = position 2
+                if (getBoard().piece(p1) == null && getBoard().piece(p2) == null) { // if there is no piece in position 1 and 2
+                    mat[position.getRow()][position.getColumn() + 2] = true; // the king can move to position 2
+                }
+            }
+            // #specialmove castling queenside rook
+            Position posT2 = new Position(position.getRow(), position.getColumn() - 4); // posT2 = rook queenside
+            if (testRookCastling(posT2)) {
+                Position p1 = new Position(position.getRow(), position.getColumn() - 1); // p1 = position 1
+                Position p2 = new Position(position.getRow(), position.getColumn() - 2); // p2 = position 2
+                Position p3 = new Position(position.getRow(), position.getColumn() - 3); // p3 = position 3
+                if (getBoard().piece(p1) == null && getBoard().piece(p2) == null && getBoard().piece(p3) == null) { // if there is no piece in position 1, 2 and 3
+                    mat[position.getRow()][position.getColumn() - 2] = true; // the king can move to position 2
+                }
+            }
+        }
 
         return mat;
     }
