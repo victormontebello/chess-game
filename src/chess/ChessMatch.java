@@ -131,8 +131,6 @@ public class ChessMatch {
                 promoted = replacePromotedPiece("Q");
             }
         }
-
-
         check = (testCheck(opponent(currentPlayer))) ? true : false;
         if(testCheckMate(opponent(currentPlayer))) {
             checkMate = true;
